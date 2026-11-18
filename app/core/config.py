@@ -12,8 +12,8 @@ class Settings(BaseSettings):
     database_url: str
     database_url_async: str
     redis_url: str = "redis://localhost:6379/0"
-    cors_origins: list[str] = ["http://localhost:5173", "http://localhost:3000"]
-
+    # cors_origins: list[str] = ["http://localhost:5173", "http://localhost:3000"]
+    cors_origins: list[str] = ["*"]
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_decoding="utf-8",

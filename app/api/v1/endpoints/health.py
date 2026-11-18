@@ -13,7 +13,7 @@ def liveness() -> dict[str, str]:
     return {"status":"alive"}
 
 @router.get("/health/ready", summary="Verifica a disponibilidade da infra do sistema")
-def readiness(db: Session = Depends(get_db)) -> dict[str,str]:
+def readiness(db: Session = Depends(get_db_sync)) -> dict[str,str]:
     try:
         db.execute(text("SELECT 1"))
         redis_client.ping()
