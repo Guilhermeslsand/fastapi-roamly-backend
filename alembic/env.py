@@ -6,6 +6,7 @@ from sqlalchemy import pool
 from alembic import context
 from app.database.base import Base
 from app.core.config import settings
+from app.modules import models as _models
 
 # Quando os models forem criados, importe-os aqui para registrá-los em Base.metadata.
 # Exemplo futuro: from app.modules.users import models as user_models
