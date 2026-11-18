@@ -1,0 +1,36 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: roamly-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: travel_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - roamly_net
+
+  redis:
+    image: redis:7-alpine
+    container_name: roamly-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - roamly_net
+
+networks:
+  roamly_net:
+    driver: bridge
+
+volumes:
+  postgres_data:
+    name: roamly-volume-postgres
+  redis_data:
+    name: roamly-volume-redis
