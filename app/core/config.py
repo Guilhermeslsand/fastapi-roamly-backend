@@ -10,6 +10,8 @@ class Settings(BaseSettings):
     debug: bool = False
     api_v1_prefix: str = "/api/v1"
     log_level: str = "INFO"
+    app_timezone: str = "America/Sao_Paulo"
+
 
     database_url: str
     database_url_async: str
