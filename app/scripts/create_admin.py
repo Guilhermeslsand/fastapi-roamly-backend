@@ -6,8 +6,7 @@ from sqlalchemy import func, select
 from app.core.security import hash_password
 from app.database.connection_sync import SessionLocal
 from app.domains.shared.enums import UserRole
-from app.modules.users.models import UserModel
-
+from app.modules.models import UserModel
 
 def main() -> None:
     print("Bootstrap de administrador da Travel API")
