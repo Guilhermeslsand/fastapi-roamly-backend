@@ -1,6 +1,8 @@
 from fastapi import APIRouter
 
 from app.modules.auth.router import router as auth_router
+from app.modules.calendar.router import router as calendar_router
+from app.modules.dashboard.router import router as dashboard_router
 from app.modules.destinations.router import admin_router as admin_destinations_router
 from app.modules.destinations.router import router as destinations_router
 from app.modules.packages.router import admin_router as admin_packages_router
@@ -22,4 +24,5 @@ api_router.include_router(packages_router)
 api_router.include_router(admin_packages_router)
 api_router.include_router(purchases_router)
 api_router.include_router(admin_customer_purchases_router)
-
+api_router.include_router(calendar_router)
+api_router.include_router(dashboard_router)
