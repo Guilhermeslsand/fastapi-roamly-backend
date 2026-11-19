@@ -128,7 +128,8 @@ class PackageService:
     def update(
         self, package_id: UUID, data: PackageUpdateRequest
     ) -> PackageAdminResponse:
-        package = self.repository.get_by_id(package_id)
+        # Serializa edições administrativas com checkouts que bloqueiam a mesma linha.
+        package = self.repository.get_by_id_for_update(package_id)
         if package is None:
             raise HTTPException(status_code=404, detail="Pacote não encontrado.")
 
@@ -193,7 +194,7 @@ class PackageService:
         return PackageAdminResponse.model_validate(updated)
 
     def deactivate(self, package_id: UUID) -> None:
-        package = self.repository.get_by_id(package_id)
+        package = self.repository.get_by_id_for_update(package_id)
         if package is None:
             raise HTTPException(status_code=404, detail="Pacote não encontrado.")
         package.is_active = False

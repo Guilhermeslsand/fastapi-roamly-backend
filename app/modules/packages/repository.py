@@ -25,6 +25,14 @@ class PackageRepository:
         )
         return self.db.scalar(statement)
 
+    def get_by_id_for_update(self, package_id: UUID) -> TravelPackageModel | None:
+        statement = (
+            select(TravelPackageModel)
+            .where(TravelPackageModel.id == package_id)
+            .with_for_update(of=TravelPackageModel)
+        )
+        return self.db.scalar(self._with_destinations(statement))
+
     def get_public_by_id(self, package_id: UUID) -> TravelPackageModel | None:
         # Os dois relacionamentos usam a mesma tabela; os predicados são aplicados
         # separadamente via EXISTS para evitar joins ambíguos.

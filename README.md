@@ -1,4 +1,4 @@
-# Travel API — Etapas 1, 2, 3 e 4
+# Travel API — Etapas 1 a 5
 
 Base inicial de uma API de viagens com FastAPI, PostgreSQL, SQLAlchemy síncrono, Alembic e Redis.
 
@@ -254,3 +254,18 @@ Testes da etapa 4:
 ```bash
 pytest -q tests/test_domain_entities.py tests/test_database_metadata.py tests/unit/test_auth_schemas.py tests/unit/test_catalog_schemas.py tests/unit/test_catalog_repositories.py
 ```
+
+## Etapa 5 — Compras e pagamentos simulados
+
+O módulo `app/modules/purchases` agora inclui schemas, repository, service, dependencies e router para checkout, histórico e cancelamento de compras.
+
+- `POST /api/v1/purchases/checkout`: exige role `CLIENT`, header `Idempotency-Key` e dados simulados de cartão. A simulação aprova automaticamente; dados do cartão não são persistidos.
+- `GET /api/v1/purchases/me`: lista compras do cliente, com paginação e filtro opcional por status.
+- `GET /api/v1/purchases/me/{purchase_id}`: consulta somente compras do próprio cliente.
+- `POST /api/v1/purchases/me/{purchase_id}/cancel`: cancela compra futura confirmada e simula estorno.
+
+O checkout bloqueia a linha do pacote com `SELECT FOR UPDATE`, valida disponibilidade, cria compra e pagamento, reduz vagas e confirma em uma única transação PostgreSQL. A constraint GiST já existente impede sobreposição de viagens confirmadas/concluídas do mesmo usuário mesmo em checkouts concorrentes. O administrador também bloqueia a linha do pacote durante atualizações de capacidade.
+
+A migration `20261118_0003` adiciona os campos de idempotência e uma restrição única por usuário/chave. Aplique todas as migrations com `alembic upgrade head`.
+
+Leia `docs/purchases.md` para exemplos de request, regras de checkout, idempotência, cancelamento e detalhes de segurança. **Não use dados reais de cartão:** o pagamento é totalmente simulado.
