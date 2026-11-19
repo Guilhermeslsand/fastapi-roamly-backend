@@ -29,6 +29,9 @@ class Settings(BaseSettings):
     rate_limit_register_per_minute: int = Field(default=5, gt=0)
     rate_limit_refresh_per_minute: int = Field(default=10, gt=0)
 
+    destinations_cache_ttl_seconds: int = Field(default=120, gt=0, le=3600)
+    packages_cache_ttl_seconds: int = Field(default=45, gt=0, le=3600)
+    
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_decoding="utf-8",
