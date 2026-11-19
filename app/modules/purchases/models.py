@@ -11,6 +11,7 @@ from sqlalchemy import (
     Integer,
     Numeric,
     String,
+    UniqueConstraint,
     func,
     text,
 )
@@ -33,6 +34,7 @@ class PurchaseModel(UUIDPrimaryKeyMixin, TimestampMixin, Base):
         CheckConstraint("total_amount >= 0", name="total_amount_non_negative"),
         CheckConstraint("cost_amount IS NULL OR cost_amount >= 0", name="cost_amount_non_negative"),
         CheckConstraint("departure_date < return_date", name="return_after_departure"),
+        UniqueConstraint("user_id", "idempotency_key", name="uq_purchases_user_idempotency_key"),
         ExcludeConstraint(
             ("user_id", "="),
             (text("daterange(departure_date, return_date, '[]')"), "&&"),
@@ -53,6 +55,9 @@ class PurchaseModel(UUIDPrimaryKeyMixin, TimestampMixin, Base):
     cost_amount: Mapped[Decimal | None] = mapped_column(Numeric(12, 2), nullable=True)
     departure_date: Mapped[date] = mapped_column(Date, nullable=False)
     return_date: Mapped[date] = mapped_column(Date, nullable=False)
+    # Nullable para preservar compras legadas; todo checkout novo exige Idempotency-Key.
+    idempotency_key: Mapped[str | None] = mapped_column(String(128), nullable=True)
+    idempotency_fingerprint: Mapped[str | None] = mapped_column(String(64), nullable=True)
     status: Mapped[PurchaseStatus] = mapped_column(
         SAEnum(
             PurchaseStatus,
