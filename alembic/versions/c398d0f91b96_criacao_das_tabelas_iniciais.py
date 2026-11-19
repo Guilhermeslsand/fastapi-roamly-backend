@@ -1,4 +1,4 @@
-"""criacao das tabelas iniciais
+"""Cria as tabelas principais do domínio de viagens.
 
 Revision ID: c398d0f91b96
 Revises: 
