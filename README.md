@@ -1,4 +1,4 @@
-# Travel API — Etapas 1, 2 e 3
+# Travel API — Etapas 1, 2, 3 e 4
 
 Base inicial de uma API de viagens com FastAPI, PostgreSQL, SQLAlchemy síncrono, Alembic e Redis.
 
@@ -91,7 +91,7 @@ docker compose down -v
 - Driver PostgreSQL `psycopg` 3.
 - Redis síncrono (`redis-py`), compatível com a estratégia síncrona da aplicação.
 - Redis e PostgreSQL são dependências separadas; PostgreSQL permanece como fonte da verdade.
-- A autenticação, RBAC, rate limiting e módulos de negócio serão implementados nas próximas etapas.
+- A autenticação, RBAC, rate limiting e catálogo de destinos/pacotes estão implementados nas etapas seguintes.
 
 ## Etapa 2 — Domains, Models e migration inicial
 
@@ -207,4 +207,50 @@ Detalhes dos contratos e decisões: `docs/authentication.md`.
 
 ```bash
 pytest
+```
+
+
+## Etapa 4 — Destinos e pacotes de viagens
+
+A etapa 4 implementa o catálogo público e a administração de destinos e pacotes. Consulte `docs/catalog.md` para os contratos completos, filtros, regras de atualização e estratégia de cache.
+
+### Principais endpoints
+
+| Método | Endpoint | Acesso |
+|---|---|---|
+| GET | `/api/v1/destinations` | Público — destinos ativos |
+| GET | `/api/v1/destinations/{id}` | Público — destino ativo |
+| GET | `/api/v1/admin/destinations` | ADMIN |
+| POST | `/api/v1/admin/destinations` | ADMIN |
+| PATCH | `/api/v1/admin/destinations/{id}` | ADMIN |
+| DELETE | `/api/v1/admin/destinations/{id}` | ADMIN — desativação lógica |
+| GET | `/api/v1/packages` | Público — pesquisa de pacotes ativos |
+| GET | `/api/v1/packages/{id}` | Público — pacote ativo |
+| GET | `/api/v1/admin/packages` | ADMIN |
+| POST | `/api/v1/admin/packages` | ADMIN |
+| PATCH | `/api/v1/admin/packages/{id}` | ADMIN |
+| DELETE | `/api/v1/admin/packages/{id}` | ADMIN — desativação lógica |
+
+A pesquisa aceita `q`, `origin_id`, `destination_id`, `departure_from`, `departure_to`, `min_price`, `max_price`, `min_days`, `max_days`, `page`, `limit`, `sort_by` e `sort_order`. `min_days`/`max_days` contam dias de calendário, incluindo partida e retorno; a resposta também informa `duration_nights`. O máximo de itens por página é 100.
+
+O custo interno (`cost_price`) só aparece nas respostas administrativas. Os endpoints públicos retornam preço de venda e informações dos destinos.
+
+### Cache do catálogo
+
+O Redis armazena respostas públicas por TTL configurável (`DESTINATIONS_CACHE_TTL_SECONDS` e `PACKAGES_CACHE_TTL_SECONDS`). Após alteração administrativa, os serviços invalidam as chaves correspondentes com `SCAN` + `UNLINK`. Se Redis estiver indisponível, as consultas seguem ao PostgreSQL; falha de cache não substitui nem compromete a fonte da verdade.
+
+### Regras de negócio aplicadas
+
+- Destinos e pacotes são desativados logicamente; não há exclusão física.
+- Destino com pacotes ativos associados não pode ser desativado.
+- Pacote só pode ser criado com origem e destino existentes e ativos.
+- Ao alterar capacidade, vagas já vendidas/reservadas são preservadas.
+- Capacidade não pode ser reduzida abaixo da quantidade vendida/reservada.
+- Itinerário (origem, destino e período) não pode ser alterado após haver compra vinculada.
+- A migration `20261118_0002_destination_location_ci.py` adiciona unicidade case-insensitive para nome/país/estado, inclusive quando estado é nulo.
+
+Testes da etapa 4:
+
+```bash
+pytest -q tests/test_domain_entities.py tests/test_database_metadata.py tests/unit/test_auth_schemas.py tests/unit/test_catalog_schemas.py tests/unit/test_catalog_repositories.py
 ```

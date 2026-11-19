@@ -6,6 +6,7 @@ from fastapi.responses import JSONResponse
 
 from app.api.v1.router import api_router
 from app.core.config import settings
+from app.core.rate_limit import RateLimitMiddleware
 
 
 logging.basicConfig(
@@ -22,6 +23,11 @@ app = FastAPI(
     docs_url="/docs",
     redoc_url="/redoc",
     openapi_url="/openapi.json",
+)
+
+app.add_middleware(
+    RateLimitMiddleware,
+    prefix=settings.api_v1_prefix,
 )
 
 app.add_middleware(
